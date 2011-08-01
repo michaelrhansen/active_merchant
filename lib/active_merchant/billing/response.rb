@@ -7,6 +7,10 @@ module ActiveMerchant #:nodoc:
     class Response
       attr_reader :params, :message, :test, :authorization, :avs_result, :cvv_result
       
+      def token
+        @authorization || (@params['direct_response']['transaction_id'] if @params && @params['direct_response'])
+      end
+      
       def success?
         @success
       end
@@ -26,7 +30,6 @@ module ActiveMerchant #:nodoc:
         @fraud_review = options[:fraud_review]
         @avs_result = AVSResult.new(options[:avs_result]).to_hash
         @cvv_result = CVVResult.new(options[:cvv_result]).to_hash
-        @token = @authorization || (@params['direct_response']['transaction_id'] if @params && @params['direct_response'])
       end
     end
   end
