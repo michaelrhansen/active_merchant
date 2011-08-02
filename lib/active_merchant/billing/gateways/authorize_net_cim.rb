@@ -110,6 +110,8 @@ module ActiveMerchant #:nodoc:
       # NOTE TO SELF: this gateway has a validate_customer_payment_profile action 
       # It requires the profile id (and billing id) exists, so its for validating an existing profile
       # Thus, cannot be used to validate a card -before- storing it (as saasramp expects in GatewayTransaction#validate_card)
+      
+      #IMPORTANT: We require all information for Authnet - so all the below must be passed through.
 
       # Create a payment profile
       def store(creditcard, options = {})
@@ -120,16 +122,19 @@ module ActiveMerchant #:nodoc:
         }
         profile[:payment_profiles][:bill_to] = options[:billing_address] if options[:billing_address]
         profile[:ship_to_list] = options[:shipping_address] if options[:shipping_address]
+        profile[:merchant_customer_id] = options[:billing_id]
+        profile[:email] = options[:email]
+        profile[:description] = options[:description]
 
         # CIM actually does require a unique ID to be passed in, 
         # either merchant_customer_id or email, so generate it, if necessary
-        if options[:billing_id]
-          profile[:merchant_customer_id] = options[:billing_id]
-        elsif options[:email]
-          profile[:email] = options[:email]
-        else
-          profile[:merchant_customer_id] = Digest::SHA1.hexdigest("#{creditcard.number}#{Time.now.to_i}").first(20)
-        end
+        # if options[:billing_id]
+        #   profile[:merchant_customer_id] = options[:billing_id]
+        # elsif options[:email]
+        #   profile[:email] = options[:email]
+        # else
+        #   profile[:merchant_customer_id] = Digest::SHA1.hexdigest("#{creditcard.number}#{Time.now.to_i}").first(20)
+        # end
 
         #create_customer_profile(:profile => profile)
         create_customer_profile( {
